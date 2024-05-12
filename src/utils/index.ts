@@ -4,6 +4,9 @@
  */
 
 export function getRGBA(value: number) {
+  if (value === 0) {
+    return `rgba(0,0,0,1)`;
+  }
   const alpha = Math.abs(value);
   const R = value < 0 ? 0 : 255;
   const G = R;
