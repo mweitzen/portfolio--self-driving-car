@@ -1,19 +1,27 @@
+import { CarType } from "./car";
+
 export default class Controls {
   public forward: boolean;
   public reverse: boolean;
   public left: boolean;
   public right: boolean;
 
-  constructor(userControlled = false) {
+  constructor(carType: CarType) {
     this.forward = false;
     this.reverse = false;
     this.left = false;
     this.right = false;
 
-    if (userControlled) {
-      this.addKeyboardListener();
-    } else {
-      this.forward = true;
+    switch (carType) {
+      case CarType.MANUAL:
+        this.addKeyboardListener();
+        break;
+      case CarType.DUMB:
+        this.forward = true;
+        break;
+      case CarType.SMART:
+      default:
+        break;
     }
   }
 

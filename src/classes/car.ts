@@ -4,48 +4,58 @@ import Sensor from "./sensor";
 import Controls from "./controls";
 import NeuralNetwork from "./network";
 
+export enum CarType {
+  "SMART",
+  "DUMB",
+  "MANUAL",
+}
+
 export default class Car {
   //manual drive override
-  private manual = false;
+  private type: CarType;
 
   // positioning
   private center: Coordinate;
   private width: number;
   private height: number;
-  private polygon: Coordinate[];
+  private polygon: Polygon;
   private forwardAngle: number;
   // movement
   private speed: number;
   private acceleration: number;
   private maxSpeed: number;
   private friction: number;
-  private smartCar: boolean;
   private controls: Controls;
   // detection
   private brain: NeuralNetwork | undefined;
-  private sensor: Sensor;
+  private sensor: Sensor | undefined;
   private collision: boolean;
 
+  /**
+   * Constructor
+   *
+   */
   public constructor(
+    type: CarType,
     center: Coordinate,
-    width: number,
-    height: number,
-    smartCar = false
+    dimensions: {
+      width: number;
+      height: number;
+    }
   ) {
+    // set car type
+    this.type = type;
+
     // size, position
     this.center = center;
-    this.width = width;
-    this.height = height;
+    this.width = dimensions.width;
+    this.height = dimensions.height;
 
     // acceleration
-    this.acceleration = 0.2;
     this.speed = 0;
-    if (smartCar) {
-      this.maxSpeed = 5;
-    } else {
-      this.maxSpeed = 3;
-    }
+    this.acceleration = 0.2;
     this.friction = 0.05;
+    this.maxSpeed = type === CarType.DUMB ? 2 : 3;
 
     // collision details
     this.collision = false;
@@ -55,12 +65,11 @@ export default class Car {
     this.polygon = this.createPolygon();
 
     // controls
-    this.smartCar = smartCar;
-    this.controls = new Controls(smartCar);
+    this.controls = new Controls(type);
 
-    // sensors
-    this.sensor = new Sensor(this);
-    if (smartCar) {
+    // detection
+    if (type !== CarType.DUMB) {
+      this.sensor = new Sensor(this);
       this.brain = new NeuralNetwork([this.sensor.getRayCount(), 6, 4]);
     }
   }
@@ -69,25 +78,34 @@ export default class Car {
    * Draw car onto canvas
    *
    */
-  public draw(ctx: CanvasRenderingContext2D) {
-    if (this.collision) {
-      ctx.fillStyle = "grey";
-    } else {
-      if (this.smartCar) {
-        ctx.fillStyle = "black";
-      } else {
-        ctx.fillStyle = "blue";
-      }
+  public draw(ctx: CanvasRenderingContext2D, drawSensor: boolean = false) {
+    let fillStyle = "white";
+    switch (this.type) {
+      case CarType.SMART:
+        fillStyle = "blue";
+        break;
+      case CarType.DUMB:
+        fillStyle = "red";
+        break;
+      case CarType.MANUAL:
+        fillStyle = "black";
+        break;
     }
+    if (this.collision) {
+      fillStyle = "grey";
+    }
+    ctx.fillStyle = fillStyle;
 
     ctx.beginPath();
     ctx.moveTo(this.polygon[0].x, this.polygon[0].y);
-    for (let i = 1; i < this.polygon.length; i++) {
-      ctx.lineTo(this.polygon[i].x, this.polygon[i].y);
-    }
+    this.polygon.forEach((point) => {
+      ctx.lineTo(point.x, point.y);
+    });
     ctx.fill();
 
-    this.sensor.draw(ctx);
+    if (this.sensor && drawSensor) {
+      this.sensor.draw(ctx);
+    }
   }
 
   /**
@@ -103,17 +121,19 @@ export default class Car {
     }
 
     // Update sensors with new position
-    this.sensor.update(obstacles);
+    if (this.sensor) {
+      this.sensor.update(obstacles);
+    }
 
     // Update sensors with new position
-    if (this.smartCar && this.brain) {
+    if (this.sensor && this.brain) {
       const offsets = this.sensor
         .getReadings()
         .map((reading) => (reading === null ? 0 : 1 - reading.offset));
 
       const outputs = NeuralNetwork.feedForward(offsets, this.brain);
 
-      if (!this.manual) {
+      if (this.type === CarType.SMART) {
         this.controls.forward = outputs[0];
         this.controls.left = outputs[1];
         this.controls.right = outputs[2];
@@ -139,12 +159,19 @@ export default class Car {
   }
 
   /**
+   * Get center of car
+   *
+   */
+  public getCenter() {
+    return this.center;
+  }
+
+  /**
    * Get center width and height of the car
    *
    */
-  public getDimensions(): CarDimensions {
+  public getDimensions() {
     return {
-      center: this.center,
       width: this.width,
       height: this.height,
       polygon: this.polygon,
@@ -235,7 +262,9 @@ export default class Car {
    */
   private detectCollision(obstacles: Coordinate[][]) {
     for (const obstacle of obstacles) {
-      if (calculatePolygonIntersection(this.polygon, obstacle)) return true;
+      if (calculatePolygonIntersection(this.polygon, obstacle)) {
+        return true;
+      }
     }
     return false;
   }

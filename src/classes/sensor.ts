@@ -10,7 +10,7 @@ export default class Sensor {
   private rayCount: number = 5;
   private rayLength: number = 150;
   private raySpread: number = Math.PI / 2;
-  private rays: SensorRay[];
+  private rays: Line[];
   private readings: (SensorTouch | null)[];
 
   public constructor(car: Car) {
@@ -69,15 +69,15 @@ export default class Sensor {
           this.rayCount === 1 ? 0.5 : i / (this.rayCount - 1)
         ) + this.car.getForwardAngle();
 
-      const carDimensions = this.car.getDimensions();
+      const center = this.car.getCenter();
 
       const start = {
-        x: carDimensions.center.x,
-        y: carDimensions.center.y,
+        x: center.x,
+        y: center.y,
       };
       const end = {
-        x: carDimensions.center.x - Math.sin(rayAngle) * this.rayLength,
-        y: carDimensions.center.y - Math.cos(rayAngle) * this.rayLength,
+        x: center.x - Math.sin(rayAngle) * this.rayLength,
+        y: center.y - Math.cos(rayAngle) * this.rayLength,
       };
 
       this.rays.push([start, end]);
@@ -88,10 +88,7 @@ export default class Sensor {
     return this.readings;
   }
 
-  private getReading(
-    ray: SensorRay,
-    obstacles: Coordinate[][]
-  ): SensorTouch | null {
+  private getReading(ray: Line, obstacles: Coordinate[][]): SensorTouch | null {
     const touches: SensorTouchList = [];
 
     for (const obstacle of obstacles) {

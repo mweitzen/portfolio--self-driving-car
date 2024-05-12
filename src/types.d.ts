@@ -7,10 +7,9 @@ declare global {
   };
 
   type Line = [Coordinate, Coordinate];
+  type Polygon = Coordinate[];
 
-  type SensorRay = Line;
-
-  type SensorTouch = Coordinate & { offset: number };
+  type SensorTouch = { x: number; y: number; offset: number };
   type SensorTouchList = SensorTouch[];
 
   type RoadBorders = [Line, Line];

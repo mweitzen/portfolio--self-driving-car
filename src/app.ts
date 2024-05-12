@@ -1,98 +1,167 @@
 import Road from "./classes/road";
-import Car from "./classes/car";
+import Car, { CarType } from "./classes/car";
 import NeuralNetwork from "./classes/network";
 
 /**
- * Animate the canvas by updating the elements
- * in animation frame
+ * Canvases from DOM
+ *
+ */
+const AppCanvas = document.getElementById("appCanvas") as HTMLCanvasElement;
+const NetworkCanvas = document.getElementById(
+  "networkCanvas"
+) as HTMLCanvasElement;
+
+/**
+ * Main function
+ *
+ */
+(function main() {
+  AppCanvas.width = 200;
+  NetworkCanvas.width = 400;
+
+  // Get canvas 2d context
+  const appCtx = AppCanvas.getContext("2d");
+  const networkCtx = NetworkCanvas.getContext("2d");
+  if (!appCtx || !networkCtx) throw new Error("Error getting Canvas Context");
+
+  // Create new road
+  const road = new Road(AppCanvas.width / 2, AppCanvas.width * 0.9);
+  road.draw(appCtx);
+
+  // Create new car
+  const car = new Car(
+    CarType.MANUAL,
+    { x: road.getLaneCenter(1), y: 100 },
+    { width: 30, height: 50 }
+  );
+
+  // Create new tester cars
+  const N = 1;
+  const testers = generateCars(N, { x: road.getLaneCenter(1), y: 100 });
+
+  // Create traffic
+  const traffic = [
+    new Car(
+      CarType.DUMB,
+      { x: road.getLaneCenter(1), y: -100 },
+      { width: 30, height: 50 }
+    ),
+    new Car(
+      CarType.DUMB,
+      { x: road.getLaneCenter(0), y: -300 },
+      { width: 30, height: 50 }
+    ),
+    new Car(
+      CarType.DUMB,
+      { x: road.getLaneCenter(2), y: -300 },
+      { width: 30, height: 50 }
+    ),
+    new Car(
+      CarType.DUMB,
+      { x: road.getLaneCenter(0), y: -500 },
+      { width: 30, height: 50 }
+    ),
+    new Car(
+      CarType.DUMB,
+      { x: road.getLaneCenter(1), y: -500 },
+      { width: 30, height: 50 }
+    ),
+    new Car(
+      CarType.DUMB,
+      { x: road.getLaneCenter(1), y: -700 },
+      { width: 30, height: 50 }
+    ),
+    new Car(
+      CarType.DUMB,
+      { x: road.getLaneCenter(2), y: -700 },
+      { width: 30, height: 50 }
+    ),
+  ];
+
+  // Animate canvas
+  animate({ appCtx, networkCtx }, { road, car, testers, traffic });
+  // for (let index = 0; index < 20; index++) {
+  // animate({ appCtx, networkCtx }, { road, car, testers, traffic });
+  // }
+})();
+
+/**
+ * Generate SMART (AI) Cars
+ *
+ */
+function generateCars(N: number, coordinates: { x: number; y: number }) {
+  const cars: Car[] = [];
+  for (let i = 0; i < N; i++) {
+    cars.push(new Car(CarType.SMART, coordinates, { width: 30, height: 50 }));
+  }
+  return cars;
+}
+
+/**
+ * Animate the Canvas/Elements
+ *
  */
 function animate(
-  appCanvas: HTMLCanvasElement,
-  networkCanvas: HTMLCanvasElement,
-  road: Road,
-  car: Car,
-  traffic: Car[]
+  contexts: {
+    appCtx: CanvasRenderingContext2D;
+    networkCtx: CanvasRenderingContext2D;
+  },
+  objects: {
+    road: Road;
+    car: Car;
+    testers: Car[];
+    traffic: Car[];
+  }
 ) {
-  // Get the context
-  const appCtx = appCanvas.getContext("2d");
-  if (!appCtx) throw new Error("Canvas context was not defined.");
-  const networkCtx = networkCanvas.getContext("2d");
-  if (!networkCtx) throw new Error("Canvas context was not defined.");
+  const { appCtx, networkCtx } = contexts;
+  const { road, car, testers, traffic } = objects;
 
   // Update traffic before we update our car
-  traffic.forEach((otherCar) => {
-    otherCar.update([
-      car.getDimensions().polygon,
-      ...road.borders,
-      ...traffic
-        .filter((x) => x !== otherCar)
-        .map((x) => x.getDimensions().polygon),
-    ]);
+  traffic.forEach((dumbCar) => {
+    dumbCar.update(road.borders);
   });
 
-  // Update the car information based on new position
-  car.update([
+  // Update the car(s) information based on new position
+  const obstacles = [
     ...road.borders,
-    ...traffic.map((otherCar) => otherCar.getDimensions().polygon),
-  ]);
+    ...traffic.map((dumbCar) => dumbCar.getDimensions().polygon),
+  ];
+  car.update(obstacles);
+  let bestTester: Car = car;
+  testers.forEach((tester) => {
+    tester.update(obstacles);
+    if (tester.getCenter().y < bestTester.getCenter().y) {
+      bestTester = tester;
+    }
+  });
 
   // Reset canvas height and translate so car has visibile road ahead
-  appCanvas.height = window.innerHeight;
-  networkCanvas.height = window.innerHeight;
+  AppCanvas.height = window.innerHeight;
+  NetworkCanvas.height = window.innerHeight;
 
   appCtx.save();
-  appCtx.translate(0, -car.getDimensions().center.y + appCanvas.height * 0.7);
+  appCtx.translate(0, -bestTester.getCenter().y + AppCanvas.height * 0.7);
 
   // Draw elements
   road.draw(appCtx);
-  traffic.forEach((otherCar) => otherCar.draw(appCtx));
+  traffic.forEach((dumbCar) => dumbCar.draw(appCtx));
   car.draw(appCtx);
+  appCtx.globalAlpha = 0.2;
+  testers.forEach((tester) => tester.draw(appCtx));
+  appCtx.globalAlpha = 1;
+  bestTester.draw(appCtx, true);
 
   // Restore the canvas
   appCtx.restore();
 
-  const brain = car.getBrain();
+  // Draw the brain of the best tester
+  const brain = bestTester.getBrain();
   if (brain) {
     NeuralNetwork.visualizeNetwork(networkCtx, brain);
   }
 
   // Set function to animation frame
   requestAnimationFrame(() =>
-    animate(appCanvas, networkCanvas, road, car, traffic)
+    animate({ appCtx, networkCtx }, { road, car, testers, traffic })
   );
 }
-
-/**
- * Main function
- */
-(function main() {
-  // Get App Canvas
-  const appCanvas = document.getElementById("appCanvas") as HTMLCanvasElement;
-  appCanvas.width = 200;
-
-  // Get Neural Network Visualization Canvas
-  const networkCanvas = document.getElementById(
-    "networkCanvas"
-  ) as HTMLCanvasElement;
-  networkCanvas.width = 400;
-
-  // Get canvas 2d context
-  const appCtx = appCanvas.getContext("2d");
-  if (!appCtx) throw new Error("Error getting Canvas Context");
-
-  const networkCtx = appCanvas.getContext("2d");
-  if (!networkCtx) throw new Error("Error getting Canvas Context");
-
-  // Create new road
-  const road = new Road(appCanvas.width / 2, appCanvas.width * 0.9);
-  road.draw(appCtx);
-
-  // Create new car
-  const car = new Car({ x: road.getLaneCenter(1), y: 100 }, 30, 50, true);
-
-  // Create traffic
-  const traffic = [new Car({ x: road.getLaneCenter(1), y: -100 }, 30, 50)];
-
-  // Animate canvas
-  animate(appCanvas, networkCanvas, road, car, traffic);
-})();
