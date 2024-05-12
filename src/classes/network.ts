@@ -1,5 +1,7 @@
 import { getNodeCenter, getRGBA } from "../utils";
 
+const outputLabels = [`⬆`, `⬇`, `⬅`, `➡`];
+
 /**
  * Neural Network Class
  *
@@ -56,11 +58,16 @@ export default class NeuralNetwork {
           dimensions.height - levelHeight,
           0
         );
-      Level.visualizeLevel(ctx, network.levels[i], {
-        ...dimensions,
-        top: levelTop,
-        height: levelHeight,
-      });
+      Level.visualizeLevel(
+        ctx,
+        network.levels[i],
+        {
+          ...dimensions,
+          top: levelTop,
+          height: levelHeight,
+        },
+        i === network.levels.length - 1 ? outputLabels : undefined
+      );
     }
   }
 }
@@ -135,7 +142,8 @@ export class Level {
   public static visualizeLevel(
     ctx: CanvasRenderingContext2D,
     level: Level,
-    dimensions: { left: number; top: number; width: number; height: number }
+    dimensions: { left: number; top: number; width: number; height: number },
+    outputLabels?: any[]
   ) {
     const { left, top, width, height } = dimensions;
     const right = left + width;
@@ -184,6 +192,18 @@ export class Level {
       ctx.setLineDash([3, 3]);
       ctx.stroke();
       ctx.setLineDash([0, 0]);
+
+      if (outputLabels) {
+        ctx.beginPath();
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = outputs[i] === 1 ? "black" : "lightgrey";
+        ctx.strokeStyle = "white";
+        ctx.font = nodeRadius * 1 + "px Arial";
+        ctx.fillText(outputLabels[i], x, top + nodeRadius * 0.1);
+        ctx.lineWidth = 0.5;
+        ctx.strokeText(outputLabels[i], x, top + nodeRadius * 0.1);
+      }
     }
   }
 }

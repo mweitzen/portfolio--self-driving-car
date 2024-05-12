@@ -3,7 +3,7 @@ import Car, { CarType } from "./classes/car";
 import NeuralNetwork from "./classes/network";
 
 /**
- * Canvases from DOM
+ * Global variables to access brain for local storage
  *
  */
 const storedBrain = getSavedBrain();
@@ -13,10 +13,9 @@ let bestBrain: NeuralNetwork;
  * Event listeners for save/discard
  *
  */
-document.getElementById("save")!.addEventListener("click", () => {
-  saveBrain(bestBrain);
-  console.log("Brain saved!");
-});
+document
+  .getElementById("save")!
+  .addEventListener("click", () => saveBrain(bestBrain));
 document.getElementById("discard")!.addEventListener("click", discardBrain);
 
 /**
@@ -33,6 +32,7 @@ const NetworkCanvas = document.getElementById(
  *
  */
 (function main() {
+  // Set canvas widths
   AppCanvas.width = 200;
   NetworkCanvas.width = 400;
 
@@ -97,22 +97,7 @@ const NetworkCanvas = document.getElementById(
 
   // Animate canvas
   animate({ appCtx, networkCtx }, { road, car, testers, traffic });
-  // for (let index = 0; index < 20; index++) {
-  //   animate({ appCtx, networkCtx }, { road, car, testers, traffic });
-  // }
 })();
-
-/**
- * Generate SMART (AI) Cars
- *
- */
-function generateCars(N: number, coordinates: { x: number; y: number }) {
-  const cars: Car[] = [];
-  for (let i = 0; i < N; i++) {
-    cars.push(new Car(CarType.SMART, coordinates, { width: 30, height: 50 }));
-  }
-  return cars;
-}
 
 /**
  * Animate the Canvas/Elements
@@ -192,6 +177,18 @@ function animate(
 }
 
 /**
+ * Generate SMART (AI) Cars
+ *
+ */
+function generateCars(N: number, coordinates: { x: number; y: number }) {
+  const cars: Car[] = [];
+  for (let i = 0; i < N; i++) {
+    cars.push(new Car(CarType.SMART, coordinates, { width: 30, height: 50 }));
+  }
+  return cars;
+}
+
+/**
  * Save/Load Best Testing Car
  *
  */
@@ -199,6 +196,7 @@ function saveBrain(brain: NeuralNetwork) {
   console.log("Saving brain...");
   console.log(brain);
   localStorage.setItem("bestBrain", JSON.stringify(brain));
+  console.log("Brain saved!");
 }
 
 function discardBrain() {
