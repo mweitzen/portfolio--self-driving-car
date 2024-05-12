@@ -36,7 +36,7 @@ const NetworkCanvas = document.getElementById(
   );
 
   // Create new tester cars
-  const N = 2;
+  const N = 20;
   const testers = generateCars(N, { x: road.getLaneCenter(1), y: 100 });
 
   // Create traffic
@@ -81,7 +81,7 @@ const NetworkCanvas = document.getElementById(
   // Animate canvas
   animate({ appCtx, networkCtx }, { road, car, testers, traffic });
   // for (let index = 0; index < 20; index++) {
-  // animate({ appCtx, networkCtx }, { road, car, testers, traffic });
+  //   animate({ appCtx, networkCtx }, { road, car, testers, traffic });
   // }
 })();
 
@@ -159,6 +159,8 @@ function animate(
   if (brain) {
     NeuralNetwork.visualizeNetwork(networkCtx, brain);
   }
+
+  console.log(testers);
 
   // Set function to animation frame
   requestAnimationFrame(() =>

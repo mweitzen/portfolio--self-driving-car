@@ -15,7 +15,8 @@ export default class Car {
   private type: CarType;
 
   // positioning
-  private center: Coordinate;
+  private x: number;
+  private y: number;
   private width: number;
   private height: number;
   private polygon: Polygon;
@@ -47,7 +48,8 @@ export default class Car {
     this.type = type;
 
     // size, position
-    this.center = center;
+    this.x = center.x;
+    this.y = center.y;
     this.width = dimensions.width;
     this.height = dimensions.height;
 
@@ -55,7 +57,7 @@ export default class Car {
     this.speed = 0;
     this.acceleration = 0.2;
     this.friction = 0.05;
-    this.maxSpeed = type === CarType.DUMB ? 2 : 3;
+    this.maxSpeed = type === CarType.DUMB ? 3 : 5;
 
     // collision details
     this.collision = false;
@@ -163,7 +165,10 @@ export default class Car {
    *
    */
   public getCenter() {
-    return this.center;
+    return {
+      x: this.x,
+      y: this.y,
+    };
   }
 
   /**
@@ -189,20 +194,20 @@ export default class Car {
     const alpha = Math.atan2(this.width, this.height);
 
     points.push({
-      x: this.center.x - Math.sin(this.forwardAngle - alpha) * radius,
-      y: this.center.y - Math.cos(this.forwardAngle - alpha) * radius,
+      x: this.x - Math.sin(this.forwardAngle - alpha) * radius,
+      y: this.y - Math.cos(this.forwardAngle - alpha) * radius,
     });
     points.push({
-      x: this.center.x - Math.sin(this.forwardAngle + alpha) * radius,
-      y: this.center.y - Math.cos(this.forwardAngle + alpha) * radius,
+      x: this.x - Math.sin(this.forwardAngle + alpha) * radius,
+      y: this.y - Math.cos(this.forwardAngle + alpha) * radius,
     });
     points.push({
-      x: this.center.x - Math.sin(Math.PI + this.forwardAngle - alpha) * radius,
-      y: this.center.y - Math.cos(Math.PI + this.forwardAngle - alpha) * radius,
+      x: this.x - Math.sin(Math.PI + this.forwardAngle - alpha) * radius,
+      y: this.y - Math.cos(Math.PI + this.forwardAngle - alpha) * radius,
     });
     points.push({
-      x: this.center.x - Math.sin(Math.PI + this.forwardAngle + alpha) * radius,
-      y: this.center.y - Math.cos(Math.PI + this.forwardAngle + alpha) * radius,
+      x: this.x - Math.sin(Math.PI + this.forwardAngle + alpha) * radius,
+      y: this.y - Math.cos(Math.PI + this.forwardAngle + alpha) * radius,
     });
 
     return points;
@@ -252,8 +257,8 @@ export default class Car {
     }
 
     // Set direction
-    this.center.x -= Math.sin(this.forwardAngle) * this.speed;
-    this.center.y -= Math.cos(this.forwardAngle) * this.speed;
+    this.x -= Math.sin(this.forwardAngle) * this.speed;
+    this.y -= Math.cos(this.forwardAngle) * this.speed;
   }
 
   /**
