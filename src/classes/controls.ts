@@ -20,7 +20,6 @@ export default class Controls {
         this.forward = true;
         break;
       case CarType.SMART:
-      default:
         break;
     }
   }
