@@ -36,7 +36,7 @@ const NetworkCanvas = document.getElementById(
   );
 
   // Create new tester cars
-  const N = 1;
+  const N = 2;
   const testers = generateCars(N, { x: road.getLaneCenter(1), y: 100 });
 
   // Create traffic
