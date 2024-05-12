@@ -57,7 +57,7 @@ export default class Car {
     this.speed = 0;
     this.acceleration = 0.2;
     this.friction = 0.05;
-    this.maxSpeed = type === CarType.DUMB ? 3 : 5;
+    this.maxSpeed = type === CarType.DUMB ? 2 : 3;
 
     // collision details
     this.collision = false;
@@ -150,6 +150,9 @@ export default class Car {
    */
   public getBrain() {
     return this.brain;
+  }
+  public loadBrain(brain: NeuralNetwork) {
+    this.brain = brain;
   }
 
   /**

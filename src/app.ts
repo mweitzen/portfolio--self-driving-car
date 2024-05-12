@@ -6,6 +6,23 @@ import NeuralNetwork from "./classes/network";
  * Canvases from DOM
  *
  */
+const storedBrain = getSavedBrain();
+let bestBrain: NeuralNetwork;
+
+/**
+ * Event listeners for save/discard
+ *
+ */
+document.getElementById("save")!.addEventListener("click", () => {
+  saveBrain(bestBrain);
+  console.log("Brain saved!");
+});
+document.getElementById("discard")!.addEventListener("click", discardBrain);
+
+/**
+ * Canvases from DOM
+ *
+ */
 const AppCanvas = document.getElementById("appCanvas") as HTMLCanvasElement;
 const NetworkCanvas = document.getElementById(
   "networkCanvas"
@@ -36,7 +53,7 @@ const NetworkCanvas = document.getElementById(
   );
 
   // Create new tester cars
-  const N = 20;
+  const N = 200;
   const testers = generateCars(N, { x: road.getLaneCenter(1), y: 100 });
 
   // Create traffic
@@ -46,36 +63,36 @@ const NetworkCanvas = document.getElementById(
       { x: road.getLaneCenter(1), y: -100 },
       { width: 30, height: 50 }
     ),
-    new Car(
-      CarType.DUMB,
-      { x: road.getLaneCenter(0), y: -300 },
-      { width: 30, height: 50 }
-    ),
-    new Car(
-      CarType.DUMB,
-      { x: road.getLaneCenter(2), y: -300 },
-      { width: 30, height: 50 }
-    ),
-    new Car(
-      CarType.DUMB,
-      { x: road.getLaneCenter(0), y: -500 },
-      { width: 30, height: 50 }
-    ),
-    new Car(
-      CarType.DUMB,
-      { x: road.getLaneCenter(1), y: -500 },
-      { width: 30, height: 50 }
-    ),
-    new Car(
-      CarType.DUMB,
-      { x: road.getLaneCenter(1), y: -700 },
-      { width: 30, height: 50 }
-    ),
-    new Car(
-      CarType.DUMB,
-      { x: road.getLaneCenter(2), y: -700 },
-      { width: 30, height: 50 }
-    ),
+    // new Car(
+    //   CarType.DUMB,
+    //   { x: road.getLaneCenter(0), y: -300 },
+    //   { width: 30, height: 50 }
+    // ),
+    // new Car(
+    //   CarType.DUMB,
+    //   { x: road.getLaneCenter(2), y: -300 },
+    //   { width: 30, height: 50 }
+    // ),
+    // new Car(
+    //   CarType.DUMB,
+    //   { x: road.getLaneCenter(0), y: -500 },
+    //   { width: 30, height: 50 }
+    // ),
+    // new Car(
+    //   CarType.DUMB,
+    //   { x: road.getLaneCenter(1), y: -500 },
+    //   { width: 30, height: 50 }
+    // ),
+    // new Car(
+    //   CarType.DUMB,
+    //   { x: road.getLaneCenter(1), y: -700 },
+    //   { width: 30, height: 50 }
+    // ),
+    // new Car(
+    //   CarType.DUMB,
+    //   { x: road.getLaneCenter(2), y: -700 },
+    //   { width: 30, height: 50 }
+    // ),
   ];
 
   // Animate canvas
@@ -121,17 +138,25 @@ function animate(
     dumbCar.update(road.borders);
   });
 
-  // Update the car(s) information based on new position
+  // Update the manual car
   const obstacles = [
     ...road.borders,
     ...traffic.map((dumbCar) => dumbCar.getDimensions().polygon),
   ];
   car.update(obstacles);
-  let bestTester: Car = car;
+
+  // Load previous best brain into first car or initialize tests
+  let bestTester: Car = testers[0];
+  if (storedBrain) {
+    bestTester.loadBrain(storedBrain);
+  }
+
+  // Update tester cars and track best tester
   testers.forEach((tester) => {
     tester.update(obstacles);
     if (tester.getCenter().y < bestTester.getCenter().y) {
       bestTester = tester;
+      bestBrain = tester.getBrain()!;
     }
   });
 
@@ -160,10 +185,33 @@ function animate(
     NeuralNetwork.visualizeNetwork(networkCtx, brain);
   }
 
-  console.log(testers);
-
   // Set function to animation frame
   requestAnimationFrame(() =>
     animate({ appCtx, networkCtx }, { road, car, testers, traffic })
   );
+}
+
+/**
+ * Save/Load Best Testing Car
+ *
+ */
+function saveBrain(brain: NeuralNetwork) {
+  console.log("Saving brain...");
+  console.log(brain);
+  localStorage.setItem("bestBrain", JSON.stringify(brain));
+}
+
+function discardBrain() {
+  localStorage.removeItem("bestBrain");
+}
+
+function getSavedBrain() {
+  console.log("Loading brain....");
+  const brain = localStorage.getItem("bestBrain");
+  if (brain) {
+    console.log("Brain loaded!");
+    return JSON.parse(brain);
+  }
+  console.log("No brain in storage.");
+  return null;
 }
