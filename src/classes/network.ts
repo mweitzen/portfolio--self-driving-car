@@ -1,4 +1,4 @@
-import { getNodeCenter, getRGBA } from "../utils";
+import { calculateLinearInterpolation, getNodeCenter, getRGBA } from "../utils";
 
 const outputLabels = [`⬆`, `⬇`, `⬅`, `➡`];
 
@@ -28,6 +28,31 @@ export default class NeuralNetwork {
     }
 
     return outputs;
+  }
+
+  /**
+   * Create mutated network from a seed network
+   *
+   */
+  public static mutate(seedNetwork: NeuralNetwork, seedAmount = 1) {
+    seedNetwork.levels.forEach((level) => {
+      for (let i = 0; i < level.biases.length; i++) {
+        level.biases[i] = calculateLinearInterpolation(
+          level.biases[i],
+          Math.random() * 2 - 1,
+          seedAmount
+        );
+      }
+      for (let i = 0; i < level.weights.length; i++) {
+        for (let j = 0; j < level.weights[i].length; j++) {
+          level.weights[i][j] = calculateLinearInterpolation(
+            level.weights[i][j],
+            Math.random() * 2 - 1,
+            seedAmount
+          );
+        }
+      }
+    });
   }
 
   /**
@@ -79,8 +104,8 @@ export default class NeuralNetwork {
 export class Level {
   private inputs: any[];
   private outputs: any[];
-  private biases: any[];
-  private weights: any[][];
+  public biases: any[];
+  public weights: any[][];
 
   constructor(inputCount: number, outputCount: number) {
     this.inputs = new Array(inputCount);
