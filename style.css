@@ -23,8 +23,12 @@ button {
 
 #appCanvas {
   background: lightgray;
+  min-height: 100vh;
+  width: 200px;
 }
 
 #networkCanvas {
   background: black;
+  min-height: 100vh;
+  width: 400px;
 }

@@ -27,15 +27,14 @@ const NetworkCanvas = document.getElementById(
   "networkCanvas"
 ) as HTMLCanvasElement;
 
+AppCanvas.width = 200;
+NetworkCanvas.width = 400;
+
 /**
  * Main function
  *
  */
 (function main() {
-  // Set canvas widths
-  AppCanvas.width = 200;
-  NetworkCanvas.width = 400;
-
   // Get canvas 2d context
   const appCtx = AppCanvas.getContext("2d");
   const networkCtx = NetworkCanvas.getContext("2d");
