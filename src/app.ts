@@ -68,11 +68,11 @@ const NetworkCanvas = document.getElementById(
       { x: road.getLaneCenter(0), y: -300 },
       { width: 30, height: 50 }
     ),
-    // new Car(
-    //   CarType.DUMB,
-    //   { x: road.getLaneCenter(2), y: -300 },
-    //   { width: 30, height: 50 }
-    // ),
+    new Car(
+      CarType.DUMB,
+      { x: road.getLaneCenter(2), y: -300 },
+      { width: 30, height: 50 }
+    ),
     // new Car(
     //   CarType.DUMB,
     //   { x: road.getLaneCenter(0), y: -500 },
