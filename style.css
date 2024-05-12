@@ -14,10 +14,10 @@ body {
 
 button {
   border: none;
-  border-radius: 1em;
   background: white;
-  padding: 0.5rem;
-  margin: 0.5em;
+  border-radius: 5px;
+  padding: 8px;
+  margin: 2px 4px;
   cursor: pointer;
 }
 
