@@ -92,8 +92,8 @@ export default class Sensor {
     const touches: SensorTouchList = [];
 
     for (const obstacle of obstacles) {
-      const touch = calculatePolygonIntersection(obstacle, ray);
-      if (touch) touches.push(touch);
+      const obstableTouches = calculatePolygonIntersection(obstacle, ray);
+      touches.push(...obstableTouches);
     }
 
     if (touches.length === 0) return null;
@@ -101,6 +101,6 @@ export default class Sensor {
     const offsets = touches.map((touch) => touch.offset);
     const minOffset = Math.min(...offsets);
 
-    return touches.find((touch) => touch.offset == minOffset) ?? null;
+    return touches.find((touch) => touch.offset === minOffset) ?? null;
   }
 }

@@ -136,10 +136,10 @@ export default class Car {
       const outputs = NeuralNetwork.feedForward(offsets, this.brain);
 
       if (this.type === CarType.SMART) {
-        this.controls.forward = outputs[0];
-        this.controls.left = outputs[1];
-        this.controls.right = outputs[2];
-        this.controls.reverse = outputs[3];
+        this.controls.forward = Boolean(outputs[0]);
+        this.controls.left = Boolean(outputs[1]);
+        this.controls.right = Boolean(outputs[2]);
+        this.controls.reverse = Boolean(outputs[3]);
       }
     }
   }
@@ -151,6 +151,7 @@ export default class Car {
   public getBrain() {
     return this.brain;
   }
+
   public loadBrain(brain: NeuralNetwork) {
     this.brain = brain;
   }
@@ -270,7 +271,7 @@ export default class Car {
    */
   private detectCollision(obstacles: Coordinate[][]) {
     for (const obstacle of obstacles) {
-      if (calculatePolygonIntersection(this.polygon, obstacle)) {
+      if (calculatePolygonIntersection(this.polygon, obstacle).length) {
         return true;
       }
     }

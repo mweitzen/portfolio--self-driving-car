@@ -81,21 +81,25 @@ export function calculatePolygonIntersection(
   poly1: Coordinate[],
   poly2: Coordinate[]
 ) {
+  const touches: SensorTouch[] = [];
   // Iterate over each side of polygon 1
   for (let i = 0; i < poly1.length; i++) {
+    if (poly1.length == 2 && i == 1) continue;
     // Get side by connecting this point and next point
     const poly1Side: Line = [poly1[i], poly1[(i + 1) % poly1.length]];
 
     // Iterate over each side of polygon 2
     for (let j = 0; j < poly2.length; j++) {
+      if (poly2.length == 2 && j == 1) continue;
       // Get side by connecting this point and next point
       const poly2Side: Line = [poly2[j], poly2[(j + 1) % poly2.length]];
 
       // Caluculate if polygon line segments intersect
       const touch = calculateSegmentIntersection(poly1Side, poly2Side);
-      if (touch) return touch;
+
+      if (touch) touches.push(touch);
     }
   }
 
-  return null;
+  return touches;
 }

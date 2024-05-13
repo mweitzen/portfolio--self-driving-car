@@ -9,16 +9,28 @@ const outputLabels = [`⬆`, `⬇`, `⬅`, `➡`];
 export default class NeuralNetwork {
   private levels: Level[];
 
-  constructor(neuronCounts: number[]) {
-    this.levels = [];
-    for (let i = 0; i < neuronCounts.length - 1; i++) {
-      this.levels.push(new Level(neuronCounts[i], neuronCounts[i + 1]));
+  /**
+   * Constructor
+   *
+   */
+  constructor(neuronCounts: number[], seedNetwork?: { levels: Level[] }) {
+    if (seedNetwork) {
+      this.levels = seedNetwork.levels.map((level) => {
+        const { inputs, outputs, biases, weights } = level.getAttributes();
+        return new Level(inputs.length, outputs.length, biases, weights);
+      });
+    } else {
+      this.levels = [];
+      for (let i = 0; i < neuronCounts.length - 1; i++) {
+        this.levels.push(new Level(neuronCounts[i], neuronCounts[i + 1]));
+      }
     }
   }
 
   /**
-   * Feed forward the given inputs through the neural network
+   * Feed Forward
    *
+   * Feed forward the given inputs through the neural network
    */
   public static feedForward(givenInputs: any[], network: NeuralNetwork) {
     let outputs = Level.feedForward(givenInputs, network.levels[0]);
@@ -31,33 +43,35 @@ export default class NeuralNetwork {
   }
 
   /**
-   * Create mutated network from a seed network
+   * Mutate
    *
+   * Create mutated network from a seed network
    */
   public static mutate(seedNetwork: NeuralNetwork, seedAmount = 1) {
-    seedNetwork.levels.forEach((level) => {
-      for (let i = 0; i < level.biases.length; i++) {
-        level.biases[i] = calculateLinearInterpolation(
-          level.biases[i],
-          Math.random() * 2 - 1,
-          seedAmount
+    return new NeuralNetwork([], {
+      levels: seedNetwork.levels.map((level) => {
+        const { inputs, outputs, biases, weights } = level.getAttributes();
+        const newBiases = biases.map((bias) =>
+          calculateLinearInterpolation(bias, Math.random() * 2 - 1, seedAmount)
         );
-      }
-      for (let i = 0; i < level.weights.length; i++) {
-        for (let j = 0; j < level.weights[i].length; j++) {
-          level.weights[i][j] = calculateLinearInterpolation(
-            level.weights[i][j],
-            Math.random() * 2 - 1,
-            seedAmount
-          );
-        }
-      }
+        const newWeights = weights.map((weight) =>
+          weight.map((value) =>
+            calculateLinearInterpolation(
+              value,
+              Math.random() * 2 - 1,
+              seedAmount
+            )
+          )
+        );
+        return new Level(inputs.length, outputs.length, newBiases, newWeights);
+      }),
     });
   }
 
   /**
-   * Visualize full neural network
+   * Visualize Network
    *
+   * Draw the full neural network to canvas
    */
   public static visualizeNetwork(
     ctx: CanvasRenderingContext2D,
@@ -102,26 +116,57 @@ export default class NeuralNetwork {
  *
  */
 export class Level {
-  private inputs: any[];
-  private outputs: any[];
-  public biases: any[];
-  public weights: any[][];
+  private inputs: number[];
+  private outputs: number[];
+  private biases: number[];
+  private weights: number[][];
 
-  constructor(inputCount: number, outputCount: number) {
+  /**
+   * Constructor
+   *
+   */
+  constructor(
+    inputCount: number,
+    outputCount: number,
+    biases?: number[],
+    weights?: number[][]
+  ) {
     this.inputs = new Array(inputCount);
     this.outputs = new Array(outputCount);
-    this.biases = new Array(outputCount);
-    this.weights = [];
-    for (let i = 0; i < inputCount; i++) {
-      this.weights.push(new Array(outputCount));
+    if (biases) {
+      this.biases = biases;
+    } else {
+      this.biases = new Array(outputCount);
     }
+    if (weights) {
+      this.weights = weights;
+    } else {
+      this.weights = [];
+      for (let i = 0; i < inputCount; i++) {
+        this.weights.push(new Array(outputCount));
+      }
 
-    Level.randomize(this);
+      Level.randomize(this);
+    }
   }
 
   /**
-   * Randomize the weights and biases
+   * Get Attributes
    *
+   */
+  public getAttributes() {
+    return {
+      inputs: this.inputs,
+      outputs: this.outputs,
+      biases: this.biases,
+      weights: this.weights,
+    };
+  }
+
+  /**
+   * Randomize
+   *
+   * Set the weights and biases to random values
    */
   private static randomize({ inputs, outputs, weights, biases }: Level) {
     for (let i = 0; i < inputs.length; i++) {
@@ -135,8 +180,9 @@ export class Level {
   }
 
   /**
-   * Feed Forward Inputs for this Level
+   * Feed Forward
    *
+   * Feed Forward Inputs for this Level
    */
   public static feedForward(givenInputs: number[], level: Level) {
     const { inputs, outputs, weights, biases } = level;
@@ -163,6 +209,7 @@ export class Level {
   /**
    * Visualize Level
    *
+   * Draw level to the canvas
    */
   public static visualizeLevel(
     ctx: CanvasRenderingContext2D,
