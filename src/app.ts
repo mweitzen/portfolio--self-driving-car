@@ -56,9 +56,10 @@ NetworkCanvas.width = 400;
   );
 
   // Create new tester cars
-  const N =
+  let N =
     Number(prompt("How many testers would you like to generate?")) ??
     MUTATION_COUNT;
+  if (N < 1) N = MUTATION_COUNT;
 
   const testers = generateCars(N, {
     x: road.getLaneCenter(STARTING_LANE),
