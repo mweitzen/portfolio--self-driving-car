@@ -59,7 +59,7 @@ NetworkCanvas.width = 400;
   if (storedBrain) {
     testers[0].loadBrain(storedBrain);
     for (let i = 1; i < testers.length; i++) {
-      const mutatedBrain = NeuralNetwork.mutate(storedBrain, 0.2);
+      const mutatedBrain = NeuralNetwork.mutate(storedBrain, 0.1);
       testers[i].loadBrain(mutatedBrain);
     }
   }
@@ -73,7 +73,7 @@ NetworkCanvas.width = 400;
     ),
     new Car(
       CarType.DUMB,
-      { x: road.getLaneCenter(2), y: -100 },
+      { x: road.getLaneCenter(2), y: -300 },
       { width: 30, height: 50 }
     ),
     new Car(
@@ -88,7 +88,7 @@ NetworkCanvas.width = 400;
     ),
     new Car(
       CarType.DUMB,
-      { x: road.getLaneCenter(1), y: -400 },
+      { x: road.getLaneCenter(1), y: -500 },
       { width: 30, height: 50 }
     ),
     new Car(

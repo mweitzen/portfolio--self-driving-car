@@ -246,6 +246,8 @@ export class Level {
       ctx.beginPath();
       ctx.arc(x, bottom, nodeRadius, 0, Math.PI * 2);
       ctx.fillStyle = getRGBA(inputs[i]);
+      ctx.strokeStyle = "rgba(255,255,255,0.3)";
+      ctx.stroke();
       ctx.fill();
     }
 
