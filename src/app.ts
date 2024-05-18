@@ -2,6 +2,10 @@ import Road from "./classes/road";
 import Car, { CarType } from "./classes/car";
 import NeuralNetwork, { Level } from "./classes/network";
 
+const MUTATION_COUNT = 10;
+const MUTATION_RATE = 0.3;
+const STARTING_LANE = 1;
+
 /**
  * Global variables to access brain for local storage
  *
@@ -52,14 +56,34 @@ NetworkCanvas.width = 400;
   );
 
   // Create new tester cars
-  const N = 1000;
-  const testers = generateCars(N, { x: road.getLaneCenter(1), y: 100 });
+  const N =
+    Number(prompt("How many testers would you like to generate?")) ??
+    MUTATION_COUNT;
+
+  const testers = generateCars(N, {
+    x: road.getLaneCenter(STARTING_LANE),
+    y: 100,
+  });
 
   // Seed testers with a mutated version of the best brain
   if (storedBrain) {
+    // Load brain
     testers[0].loadBrain(storedBrain);
+
+    // Prompt for mutation rate
+    let mutationRate =
+      Number(
+        prompt(
+          "How much would you like to mutate the stored brain? \n\n* Between 0 (least random) and 1(most random)"
+        )
+      ) ?? MUTATION_COUNT;
+
+    // Check user input
+    if (mutationRate > 1 || mutationRate < 0) mutationRate = MUTATION_RATE;
+
+    // Mutate brains
     for (let i = 1; i < testers.length; i++) {
-      const mutatedBrain = NeuralNetwork.mutate(storedBrain, 0.1);
+      const mutatedBrain = NeuralNetwork.mutate(storedBrain, mutationRate);
       testers[i].loadBrain(mutatedBrain);
     }
   }
@@ -69,11 +93,6 @@ NetworkCanvas.width = 400;
     new Car(
       CarType.DUMB,
       { x: road.getLaneCenter(1), y: -100 },
-      { width: 30, height: 50 }
-    ),
-    new Car(
-      CarType.DUMB,
-      { x: road.getLaneCenter(2), y: -300 },
       { width: 30, height: 50 }
     ),
     new Car(
@@ -93,7 +112,12 @@ NetworkCanvas.width = 400;
     ),
     new Car(
       CarType.DUMB,
-      { x: road.getLaneCenter(0), y: -500 },
+      { x: road.getLaneCenter(2), y: -500 },
+      { width: 30, height: 50 }
+    ),
+    new Car(
+      CarType.DUMB,
+      { x: road.getLaneCenter(0), y: -700 },
       { width: 30, height: 50 }
     ),
     new Car(
@@ -108,17 +132,12 @@ NetworkCanvas.width = 400;
     ),
     new Car(
       CarType.DUMB,
-      { x: road.getLaneCenter(1), y: -800 },
-      { width: 30, height: 50 }
-    ),
-    new Car(
-      CarType.DUMB,
       { x: road.getLaneCenter(1), y: -1100 },
       { width: 30, height: 50 }
     ),
     new Car(
       CarType.DUMB,
-      { x: road.getLaneCenter(2), y: -700 },
+      { x: road.getLaneCenter(0), y: -1100 },
       { width: 30, height: 50 }
     ),
   ];
